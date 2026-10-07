@@ -3081,4 +3081,19 @@ print(
     count(periodo)
 )
 
+
+#=================================================================================
+# 18. EXPORTAR COORTE FINAL
+#=================================================================================
+
 getwd()
+setwd("/Users/xgx/Desktop/DOUTORADO/_INFLUENZA/REVISOR/SCRIPTS_REVISADOS/")
+
+write.csv(
+  bd_final,
+  "influd_2013_2025.csv",
+  row.names = FALSE,
+  fileEncoding = "UTF-8"
+)
+
+
