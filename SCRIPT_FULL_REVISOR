@@ -3097,3 +3097,7 @@ write.csv(
 )
 
 
+write_parquet(
+  influd_2013_2025,
+  "influd_2013_2025.parquet"
+)
