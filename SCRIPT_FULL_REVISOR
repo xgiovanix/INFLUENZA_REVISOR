@@ -3082,6 +3082,7 @@ print(
 )
 
 
+
 #=================================================================================
 # 18. EXPORTAR COORTE FINAL
 #=================================================================================
@@ -3089,15 +3090,134 @@ print(
 getwd()
 setwd("/Users/xgx/Desktop/DOUTORADO/_INFLUENZA/REVISOR/SCRIPTS_REVISADOS/")
 
+
+library(haven)
+library(readr)
+
+unique(bd_final$qtd_comorbidade)
+class(bd_final$qtd_comorbidade)
+
+# =========================================================
+# BASE FINAL DE ANÁLISE
+# =========================================================
+# =========================================================
+# BASE FINAL
+# =========================================================
+
+influd_2013_2025 <- bd_final
+
+influd_2013_2025 <- influd_2013_2025 %>%
+  mutate(
+    
+    idade_cat = case_when(
+      idade >= 18 & idade <= 40 ~ "18-40",
+      idade >= 41 & idade <= 60 ~ "41-60",
+      idade >= 61 & idade <= 80 ~ "61-80",
+      idade > 80 ~ ">80",
+      TRUE ~ NA_character_
+    ),
+    
+    idade_cat = factor(
+      idade_cat,
+      levels = c("18-40", "41-60", "61-80", ">80")
+    ),
+    
+    comorbidade_cat = case_when(
+      qtd_comorbidade == 0 ~ "0",
+      qtd_comorbidade == 1 ~ "1",
+      qtd_comorbidade > 1 ~ ">1",
+      TRUE ~ NA_character_
+    ),
+    
+    comorbidade_cat = factor(
+      comorbidade_cat,
+      levels = c("0", "1", ">1")
+    )
+  )
+
+# Padronização dos nomes
+influd_2013_2025 <- influd_2013_2025 %>%
+  rename(
+    proxy_GESTANTE = gestante,
+    proxy_PUERPERA = puerpera
+  )
+
+influd_2013_2025 <- influd_2013_2025 %>%
+  mutate(
+    evolucao = case_when(
+      evolucao == "Death" ~ "Death",
+      evolucao == "Discharge" ~ "Discharge",
+      TRUE ~ NA_character_
+    )
+  )
+
+# Converter factors para character antes da exportação
+influd_2013_2025 <- influd_2013_2025 %>%
+  mutate(
+    across(where(is.factor), as.character)
+  )
+
+
+
+# =========================================================
+# VALIDAÇÃO
+# =========================================================
+
+cat("N final:", nrow(influd_2013_2025), "\n\n")
+
+print(
+  table(
+    influd_2013_2025$evolucao,
+    useNA = "always"
+  )
+)
+
+cat("N final:", nrow(influd_2013_2025), "\n")
+
+cat("\nIdade:\n")
+print(table(influd_2013_2025$idade_cat, useNA = "always"))
+
+cat("\nComorbidade:\n")
+print(table(influd_2013_2025$comorbidade_cat, useNA = "always"))
+
+cat("\nPeríodo:\n")
+print(table(influd_2013_2025$periodo, useNA = "always"))
+
+cat("\nDesfecho:\n")
+print(table(influd_2013_2025$evolucao, useNA = "always"))
+
+
+str(influd_2013_2025)
+tabyl(influd_2013_2025$ano)
+
+
+influd_2013_2025 <- influd_2013_2025 %>% 
+  mutate(
+    across(where(is.factor), as.character)
+  )
+
+
+read_dta("influd_2013_2025.dta") %>% glimpse()
+read_csv("influd_2013_2025.csv") %>% glimpse()
+
+# =========================================================
+# EXPORTAÇÃO
+# =========================================================
+
+write_dta(
+  influd_2013_2025,
+  "influd_2013_2025.dta",
+  version = 15
+)
+
 write.csv(
-  bd_final,
+  influd_2013_2025,
   "influd_2013_2025.csv",
   row.names = FALSE,
   fileEncoding = "UTF-8"
 )
 
-
-write_parquet(
+arrow::write_parquet(
   influd_2013_2025,
   "influd_2013_2025.parquet"
 )
